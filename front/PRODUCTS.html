@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product Management</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+    <h1>Product Management</h1>
+
+    <!-- Form for adding a new product -->
+    <h2>Add a Product</h2>
+    <form id="addProductForm">
+        <label for="ctg">Category:</label>
+        <input type="text" id="ctg" name="ctg">
+        <br>
+        <label for="desc">Description:</label>
+        <input type="text" id="desc" name="desc">
+        <br>
+        <label for="price">Price:</label>
+        <input type="number" step="0.01" id="price" name="price">
+        <br>
+        <input type="submit" value="Add Product">
+    </form>
+<!-- <img src="../static/images/placeholder.png"> -->
+    <h2>upd a Product</h2>
+    <form id="updProductForm">
+        <label for="ctg">Category:</label>
+        <input type="text" id="updctg" name="ctg">
+        <br>
+        <label for="desc">Description:</label>
+        <input type="text" id="upddesc" name="desc">
+        <br>
+        <label for="price">Price:</label>
+        <input type="number" step="0.01" id="updprice" name="price">
+        <br>
+    </form>
+
+    <!-- List of existing products -->
+    <h2>Product List</h2>
+    <ul id="productList">
+        <!-- Product items will be dynamically added here -->
+    </ul>
+
+    <script>
+
+        const productList = document.getElementById('productList');
+        const addProductForm = document.getElementById('addProductForm');
+        const MY_SERVER = 'http://127.0.0.1:8000/products'
+
+        function fetchProductList() {
+            axios.get(MY_SERVER)
+                .then(response => {
+                    productList.innerHTML = '';
+                    response.data.forEach(product => {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `Category: ${product.ctg}, Description: ${product.desc}, Price: $${product.price}, <img src="../static/${product.image}">
+                        `;
+
+                        const updateButton = document.createElement('button');
+                        updateButton.innerText = 'Update';
+                        updateButton.addEventListener('click', () => updateProduct(product.id));
+
+                        const deleteButton = document.createElement('button');
+                        deleteButton.innerText = 'Delete';
+                        deleteButton.addEventListener('click', () => deleteProduct(product.id));
+
+                        listItem.appendChild(updateButton);
+                        listItem.appendChild(deleteButton);
+                        productList.appendChild(listItem);
+                    });
+                });
+        }
+
+        function addProduct(event) {
+            event.preventDefault();
+            const formData = new FormData(addProductForm);
+            axios.post(MY_SERVER, formData)
+                .then(() => {
+                    fetchProductList();
+                    addProductForm.reset();
+                });
+        }
+
+        function updateProduct(id) {
+            event.preventDefault();
+            const formData = new FormData(updProductForm);
+            axios.put(`${MY_SERVER}/${id}`, formData)
+                .then(() => {
+                    fetchProductList();
+                    addProductForm.reset();
+                });
+        }
+
+        function deleteProduct(id) {
+            axios.delete(`${MY_SERVER}/${id}`)
+                .then(() => {
+                    fetchProductList();
+                });
+        }
+
+        fetchProductList();
+        addProductForm.addEventListener('submit', addProduct);
+    </script>
+</body>
+</html>
